@@ -25,7 +25,7 @@ public class Main {
     List<Card> allCards = query.list();
     for (int i = 0; i < allCards.size(); i++) {
       Card card = (Card) allCards.get(i);
-      System.out.print(card.getName());
+      System.out.print(card.getType());
       System.out.println();
     }
   }
