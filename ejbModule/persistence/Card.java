@@ -137,7 +137,7 @@ public class Card {
   }
 
   public Boolean isHero() {
-    return isHero;
+    return isHero != null ? isHero : false;
   }
 
   public void setHero(Boolean isHero) {
@@ -145,7 +145,7 @@ public class Card {
   }
 
   public Integer getUnits() {
-    return units;
+    return units != null ? units : 0;
   }
 
   public void setUnits(Integer units) {
@@ -153,7 +153,7 @@ public class Card {
   }
 
   public Integer getEquipment() {
-    return equipment;
+    return equipment != null ? equipment : 0;
   }
 
   public void setEquipment(Integer equipment) {
@@ -161,7 +161,7 @@ public class Card {
   }
 
   public Integer getTactics() {
-    return tactics;
+    return tactics != null ? tactics : 0;
   }
 
   public void setTactics(Integer tactics) {
@@ -169,7 +169,7 @@ public class Card {
   }
 
   public Boolean isBarrage() {
-    return barrage;
+    return barrage != null ? barrage : false;
   }
 
   public void setBarrage(Boolean barrage) {
@@ -177,7 +177,7 @@ public class Card {
   }
 
   public Integer getProtectInfantry() {
-    return protectInfantry;
+    return protectInfantry != null ? protectInfantry : 0;
   }
 
   public void setProtectInfantry(Integer protectInfantry) {
@@ -185,7 +185,7 @@ public class Card {
   }
 
   public Integer getEmp() {
-    return emp;
+    return emp != null ? emp : 0;
   }
 
   public void setEmp(Integer emp) {
@@ -193,7 +193,7 @@ public class Card {
   }
 
   public Integer getOrbitalStrike() {
-    return orbitalStrike;
+    return orbitalStrike != null ? orbitalStrike : 0;
   }
 
   public void setOrbitalStrike(Integer orbitalStrike) {
@@ -201,7 +201,7 @@ public class Card {
   }
 
   public Integer getBomb() {
-    return bomb;
+    return bomb != null ? bomb : 0;
   }
 
   public void setBomb(Integer bomb) {
@@ -209,7 +209,7 @@ public class Card {
   }
 
   public Integer getReturnFire() {
-    return returnFire;
+    return returnFire != null ? returnFire : 0;
   }
 
   public void setReturnFire(Integer returnFire) {
@@ -217,7 +217,7 @@ public class Card {
   }
 
   public Integer getArmor() {
-    return armor;
+    return armor != null ? armor : 0;
   }
 
   public void setArmor(Integer armor) {
@@ -225,7 +225,7 @@ public class Card {
   }
 
   public Integer getMedic() {
-    return medic;
+    return medic != null ? medic : 0;
   }
 
   public void setMedic(Integer medic) {
@@ -233,7 +233,7 @@ public class Card {
   }
 
   public Integer getRepair() {
-    return repair;
+    return repair != null ? repair : 0;
   }
 
   public void setRepair(Integer repair) {
@@ -241,7 +241,7 @@ public class Card {
   }
 
   public Integer getCommantInfantry() {
-    return commantInfantry;
+    return commantInfantry != null ? commantInfantry : 0;
   }
 
   public void setCommantInfantry(Integer commantInfantry) {
@@ -249,7 +249,7 @@ public class Card {
   }
 
   public Boolean isLaser() {
-    return laser;
+    return laser != null ? laser : false;
   }
 
   public void setLaser(Boolean laser) {
@@ -257,7 +257,7 @@ public class Card {
   }
 
   public Boolean isMissile() {
-    return missile;
+    return missile != null ? missile : false;
   }
 
   public void setMissile(Boolean missile) {
@@ -265,7 +265,7 @@ public class Card {
   }
 
   public Boolean isShell() {
-    return shell;
+    return shell != null ? shell : false;
   }
 
   public void setShell(Boolean shell) {

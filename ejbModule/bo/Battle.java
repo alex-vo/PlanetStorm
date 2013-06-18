@@ -5,12 +5,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import persistence.Card;
 import persistence.Squad;
 import persistence.SquadMember;
 
 public class Battle {
+
+  public static final int PLAYER_HEALTH = 1000;
+  public static final int ITERATIONS = 200;
 
   private List<Card> firstDeck;
   private List<Card> secondDeck;
@@ -33,34 +37,64 @@ public class Battle {
     Collections.shuffle(secondDeck);
   }
 
-  public void fight() {
+  public void modelBattle() {
     List<CardFighter> firstWaitingZone = new ArrayList<CardFighter>();
     List<CardFighter> secondWaitingZone = new ArrayList<CardFighter>();
     List<CardFighter> firstBattleField = new ArrayList<CardFighter>();
     List<CardFighter> secondBattleField = new ArrayList<CardFighter>();
-    Integer firstPlayerHealth = 50;
-    Integer secondPlayerHealth = 50;
-    int firstTurn = 0;
-    int secondTurn = 0;
-    for (int i = 0; i < 50; i++) {
-      for (CardFighter cardFighter : firstWaitingZone) {
-        if (i == cardFighter.getCard().getTime()) {
-          cardFighter.enterBattleField(firstBattleField, firstWaitingZone);
+    List<CardFighter> firstCards = new ArrayList<CardFighter>();
+    for (Card card : this.firstDeck) {
+      firstCards.add(new CardFighter(card));
+    }
+    List<CardFighter> secondCards = new ArrayList<CardFighter>();
+    for (Card card : this.secondDeck) {
+      secondCards.add(new CardFighter(card));
+    }
+    List<CardFighter> myCards = null;
+    AtomicInteger firstPlayerHealth = new AtomicInteger(PLAYER_HEALTH);
+    AtomicInteger secondPlayerHealth = new AtomicInteger(PLAYER_HEALTH);
+    AtomicInteger opponentHealth = null;
+    AtomicInteger firstTurn = new AtomicInteger(0);
+    AtomicInteger secondTurn = new AtomicInteger(0);
+    AtomicInteger myTurn = new AtomicInteger(0);
+    List<CardFighter> myWaitingZone = new ArrayList<CardFighter>();
+    List<CardFighter> myBattleField = new ArrayList<CardFighter>();
+    List<CardFighter> opponentBattleField = new ArrayList<CardFighter>();
+    for (int i = 0; i < ITERATIONS; i++) {
+      if (i % 2 == 0) {
+        myCards = firstCards;
+        myWaitingZone = firstWaitingZone;
+        myBattleField = firstBattleField;
+        opponentBattleField = secondBattleField;
+        myTurn = firstTurn;
+        opponentHealth = secondPlayerHealth;
+      } else {
+        myCards = secondCards;
+        myWaitingZone = secondWaitingZone;
+        myBattleField = secondBattleField;
+        opponentBattleField = firstBattleField;
+        myTurn = secondTurn;
+        opponentHealth = firstPlayerHealth;
+      }
+      if (myCards.size() > 0) {
+        myWaitingZone.add(myCards.get(0));
+        myCards.remove(0);
+      }
+
+      Collection<CardFighter> movingCards = new ArrayList<CardFighter>();
+      for (CardFighter cardFighter : myWaitingZone) {
+        if (i / 2 >= cardFighter.getCard().getTime()) {
+          movingCards.add(cardFighter);
+          cardFighter.enterBattleField(myBattleField, myWaitingZone);
         }
       }
-      if (firstDeck != null && firstDeck.size() > 0) {
-        CardFighter cardFighter = new CardFighter(firstDeck.get(0));
-        firstDeck.remove(cardFighter);
-        firstWaitingZone.add(cardFighter);
-      }
-      if (firstBattleField != null && firstBattleField.size() > 0) {
-        // firstBattleField.get(firstTurn) - FIGHT
+      myWaitingZone.removeAll(movingCards);
 
-        if (firstBattleField.size() > firstTurn + 1) {
-          firstTurn++;
-        }
+      opponentHealth.set(makeAction(myWaitingZone, myBattleField, opponentBattleField,
+          opponentHealth.intValue(), myTurn));
+      if (opponentHealth.intValue() <= 0) {
+        break;
       }
-
       Collection<CardFighter> cardsToRemove = new ArrayList<CardFighter>();
       for (CardFighter cardFighter : firstBattleField) {
         if (cardFighter.defense <= 0) {
@@ -78,13 +112,31 @@ public class Battle {
       }
       secondBattleField.removeAll(cardsToRemove);
     }
-    if (firstPlayerHealth <= 0) {
-      System.out.println("Second player wins");
-    } else if (secondPlayerHealth <= 0) {
-      System.out.println("First player wins");
+    if (firstPlayerHealth.intValue() <= 0) {
+      System.out.println("Second player wins [player1: " + firstPlayerHealth + " player2: "
+          + secondPlayerHealth + "]");
+    } else if (secondPlayerHealth.intValue() <= 0) {
+      System.out.println("First player wins [player1: " + firstPlayerHealth + " player2: "
+          + secondPlayerHealth + "]");
     } else {
-      System.out.println("Draw");
+      System.out.println("Draw [player1: " + firstPlayerHealth + " player2: " + secondPlayerHealth
+          + "]");
     }
+  }
+
+  private Integer makeAction(List<CardFighter> myWaitingZone, List<CardFighter> myBattleField,
+      List<CardFighter> opponentBattleField, Integer opponentHealth, AtomicInteger turn) {
+    Integer enemyHealth = opponentHealth;
+    if (myBattleField != null && myBattleField.size() > turn.intValue()) {
+      enemyHealth = myBattleField.get(turn.intValue()).fight(myBattleField, opponentBattleField,
+          opponentHealth.intValue());
+      if (myBattleField.size() > turn.intValue() + 1) {
+        turn.set(turn.intValue() + 1);
+      } else if (myBattleField.size() == turn.intValue() + 1) {
+        turn.set(0);
+      }
+    }
+    return enemyHealth;
   }
 
   class CardFighter {
@@ -103,8 +155,9 @@ public class Battle {
       return card;
     }
 
-    public void fight(List<CardFighter> myBattleField, List<CardFighter> opponentBattleField,
+    public Integer fight(List<CardFighter> myBattleField, List<CardFighter> opponentBattleField,
         Integer opponentHealth) {
+      Integer opponentResultHealth = opponentHealth;
       List<CardFighter> cardsToAttack = new ArrayList<CardFighter>();
       if (this.enabled) {
         // MEDIC
@@ -216,10 +269,14 @@ public class Battle {
             }
           }
           // END BOMB
+          if (this.attack > 0) {
+            opponentResultHealth -= this.attack;
+          }
         }
       } else {
         this.enabled = true;
       }
+      return opponentResultHealth;
     }
 
     public void attacked(CardFighter attackingCard, List<CardFighter> attackingBattleField) {
@@ -289,7 +346,6 @@ public class Battle {
         }
       }
       // END COMMAND INFANTRY
-      waitingZone.remove(this);
       battleField.add(this);
     }
 
